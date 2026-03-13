@@ -288,4 +288,4 @@ position = Vector2(4, 7)
 position = Vector2(2, 0)
 
 [node name="Muzzle" type="Node2D" parent="GunPivot"]
-position = Vector2(18, 0)
+position = Vector2(5, -1)

@@ -8,7 +8,7 @@ const ATTACK_COOLDOWN = 1.0
 const LUNGE_SPEED = 400.0
 const LUNGE_DURATION = 0.15
 const WINDUP_DURATION = 0.2
-const MAX_HP = 30
+const MAX_HP = 80
 const ACCELERATION = 12.0  # 速度插值系数，越大响应越快
 
 var attack_timer := 0.0

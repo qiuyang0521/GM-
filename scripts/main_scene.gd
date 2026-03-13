@@ -80,6 +80,9 @@ func _connect_slimes() -> void:
 
 
 func _on_slime_removed() -> void:
+	# 场景正在卸载时跳过，避免访问已销毁的节点
+	if not is_inside_tree():
+		return
 	# 当某只史莱姆从场景中移除后，检查是否所有史莱姆都已消灭
 	if get_tree().get_nodes_in_group("slimes").is_empty():
 		_show_victory()

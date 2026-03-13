@@ -27,8 +27,8 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 func _on_area_entered(area: Area2D) -> void:
-	# 碰到史莱姆的 Hitbox，扣血后销毁自身
+	# 碰到史莱姆的 Hitbox，扣血后销毁自身（排除玩家）
 	var parent := area.get_parent()
-	if parent != null and parent.has_method("take_damage"):
+	if parent != null and parent.has_method("take_damage") and not parent.is_in_group("player"):
 		parent.take_damage(DAMAGE)
 		queue_free()
