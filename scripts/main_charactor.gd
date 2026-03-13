@@ -2,12 +2,15 @@
 
 signal died
 
-const SPEED = 150.0
-const DASH_SPEED = 400.0
-const DASH_DURATION = 0.25
-const DASH_COOLDOWN = 1.0
-const MAX_HP = 100
+const SPEED = 150.0				#移动速度
+const DASH_SPEED = 400.0		#冲刺速度
+const DASH_DURATION = 0.25		#冲刺持续时间
+const DASH_COOLDOWN = 1.0		#冲刺冷却时间
+const MAX_HP = 100				#最大生命值
 const DASH_DAMAGE = 20
+const AUTO_AIM_RANGE  = 200.0  # 自动瞄准距离（像素）
+const SHOOT_COOLDOWN  = 0.4    # 射击间隔（秒）
+const BULLET_SCENE    = preload("res://scenes/bullet.tscn")			#冲刺伤害
 
 var hp := MAX_HP
 var health_bar: ProgressBar
@@ -21,6 +24,8 @@ var _dash_slimes_hit: Array = []
 var is_injured := false
 var injury_timer := 0.0
 const INJURY_DURATION = 0.5
+
+var shoot_timer := 0.0
 
 
 func _ready() -> void:
@@ -109,15 +114,50 @@ func _physics_process(delta: float) -> void:
 		anim.flip_h = true
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	shoot_timer = max(0.0, shoot_timer - delta)
 	_update_gun()
 
 
 func _update_gun() -> void:
 	var gun_pivot := $GunPivot
-	gun_pivot.look_at(get_global_mouse_position())
-	# 在枪轴上翻转（而非在精灵贴图上），避免精灵自身旋转对吉反方向的干扰
-	gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
+	var nearest := _get_nearest_slime()
+
+	if nearest != null:
+		# 自动瞄准最近的怪物
+		gun_pivot.look_at(nearest.global_position)
+		gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
+		# 自动射击
+		if shoot_timer <= 0.0:
+			_shoot(gun_pivot)
+			shoot_timer = SHOOT_COOLDOWN
+	else:
+		# 跟随鼠标
+		gun_pivot.look_at(get_global_mouse_position())
+		gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
+
+
+func _get_nearest_slime() -> Node:
+	var nearest: Node = null
+	var nearest_dist := AUTO_AIM_RANGE
+	for slime in get_tree().get_nodes_in_group("slimes"):
+		if slime.get("is_dead") == true:
+			continue
+		var dist := global_position.distance_to(slime.global_position)
+		if dist < nearest_dist:
+			nearest_dist = dist
+			nearest = slime
+	return nearest
+
+
+func _shoot(gun_pivot: Node2D) -> void:
+	var bullet := BULLET_SCENE.instantiate()
+	var dir := Vector2(cos(gun_pivot.global_rotation), sin(gun_pivot.global_rotation))
+	bullet.direction = dir
+	bullet.rotation  = dir.angle()
+	var muzzle_pos: Vector2 = $GunPivot/Muzzle.global_position
+	get_tree().current_scene.add_child(bullet)
+	bullet.global_position = muzzle_pos
 
 
 func take_damage(amount: int) -> void:

@@ -1,7 +1,5 @@
 extends Node2D
 
-const COINS_TO_WIN := 5
-
 var coin_count := 0
 var reset_hold_timer := 0.0
 
@@ -44,6 +42,8 @@ func _ready() -> void:
 
 	# 延迟连接硬币信号（确保硬币实例已加入 "coins" 组）
 	call_deferred("_connect_coins")
+	# 延迟连接史莱姆死亡检测
+	call_deferred("_connect_slimes")
 
 
 func _process(delta: float) -> void:
@@ -71,7 +71,17 @@ func _connect_coins() -> void:
 func _on_coin_collected() -> void:
 	coin_count += 1
 	$CoinHUD/CoinLabel.text = "硬币: %d" % coin_count
-	if coin_count >= COINS_TO_WIN:
+
+
+func _connect_slimes() -> void:
+	for slime in get_tree().get_nodes_in_group("slimes"):
+		if not slime.tree_exited.is_connected(_on_slime_removed):
+			slime.tree_exited.connect(_on_slime_removed)
+
+
+func _on_slime_removed() -> void:
+	# 当某只史莱姆从场景中移除后，检查是否所有史莱姆都已消灭
+	if get_tree().get_nodes_in_group("slimes").is_empty():
 		_show_victory()
 
 
