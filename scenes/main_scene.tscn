@@ -70,6 +70,12 @@ position = Vector2(-271, -82)
 [node name="slime3" parent="." instance=ExtResource("4_gubc5")]
 position = Vector2(191, -186)
 
+[node name="slime4" parent="." instance=ExtResource("4_gubc5")]
+position = Vector2(19, -245)
+
+[node name="slime5" parent="." instance=ExtResource("4_gubc5")]
+position = Vector2(-303, 36)
+
 [node name="MainCharactor" parent="." instance=ExtResource("2_pw63i")]
 position = Vector2(0, -5)
 
@@ -249,9 +255,3 @@ position = Vector2(-273, 101)
 
 [node name="Coin6" parent="." instance=ExtResource("5_gubc5")]
 position = Vector2(247, 132)
-
-[node name="slime4" parent="." instance=ExtResource("4_gubc5")]
-position = Vector2(19, -245)
-
-[node name="slime5" parent="." instance=ExtResource("4_gubc5")]
-position = Vector2(-303, 36)
