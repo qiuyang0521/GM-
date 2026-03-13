@@ -138,7 +138,7 @@ func _on_volume_changed(value: float) -> void:
 	AudioServer.set_bus_volume_db(0, db)
 
 
-# ── 按鈕悬停动画（与 start_menu.gd 一致）────────────────
+# ── 按钮悬停动画（与 start_menu.gd 一致）────────────────
 func _setup_button(button: Button) -> void:
 	button.mouse_entered.connect(_on_button_hover.bind(button))
 	button.mouse_exited.connect(_on_button_unhover.bind(button))

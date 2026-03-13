@@ -80,7 +80,6 @@ position = Vector2(-303, 36)
 position = Vector2(0, -5)
 
 [node name="Camera2D" type="Camera2D" parent="MainCharactor"]
-position = Vector2(58, 32)
 zoom = Vector2(2.965, 2.965)
 
 [node name="DeathScreen" type="CanvasLayer" parent="."]
