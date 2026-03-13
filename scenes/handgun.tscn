@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://cddu7fp4h02j1"]
+
+[ext_resource type="Texture2D" uid="uid://cpm067nqbhop8" path="res://assets/sprites/Handgun.png" id="1_n8tod"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ibvlx"]
+atlas = ExtResource("1_n8tod")
+region = Rect2(0, 0, 26, 33)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1o8qd"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ibvlx")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="handgun" type="Node2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+rotation = 0.7853982
+scale = Vector2(0.2884616, 0.28030306)
+sprite_frames = SubResource("SpriteFrames_1o8qd")
