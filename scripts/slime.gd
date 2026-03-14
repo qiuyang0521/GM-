@@ -1,15 +1,16 @@
 extends CharacterBody2D
 
 
-const SPEED = 180.0
+const SPEED = 100.0
 const ATTACK_RANGE = 40.0
 const ATTACK_DAMAGE = 10
 const ATTACK_COOLDOWN = 1.0
 const LUNGE_SPEED = 400.0
 const LUNGE_DURATION = 0.15
 const WINDUP_DURATION = 0.2
-const MAX_HP = 80
+const MAX_HP = 30
 const ACCELERATION = 12.0  # 速度插值系数，越大响应越快
+const BOUNCE_DURATION = 0.6  # 碰墙后反向移动的持续时间（秒）
 
 var attack_timer := 0.0
 var player: Node = null
@@ -22,6 +23,8 @@ var has_lunge_hit := false
 var hp := MAX_HP
 var health_bar: ProgressBar
 var is_dead := false
+var bounce_timer    := 0.0
+var bounce_direction := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -77,17 +80,31 @@ func _physics_process(delta: float) -> void:
 			windup_timer = WINDUP_DURATION
 			is_winding_up = true
 		velocity = velocity.lerp(Vector2.ZERO, ACCELERATION * delta)
+		bounce_timer = 0.0  # 进入攻击范围后清除反弹状态
 	else:
 		is_attacking = false
 		attack_timer = 0.0
-		var target_vel: Vector2
-		if abs(to_player.x) >= abs(to_player.y):
-			target_vel = Vector2(sign(to_player.x), 0) * SPEED
+		if bounce_timer > 0.0:
+			# 反弹阶段：沿墙壁法线方向退离
+			bounce_timer -= delta
+			velocity = velocity.lerp(bounce_direction * SPEED, ACCELERATION * delta)
 		else:
-			target_vel = Vector2(0, sign(to_player.y)) * SPEED
-		velocity = velocity.lerp(target_vel, ACCELERATION * delta)
+			var target_vel: Vector2
+			if abs(to_player.x) >= abs(to_player.y):
+				target_vel = Vector2(sign(to_player.x), 0) * SPEED
+			else:
+				target_vel = Vector2(0, sign(to_player.y)) * SPEED
+			velocity = velocity.lerp(target_vel, ACCELERATION * delta)
 
 	move_and_slide()
+
+	# 追踪阶段碰墙时触发反弹（取墙壁法线作为退离方向）
+	if is_on_wall() and bounce_timer <= 0.0 and not is_attacking and not is_winding_up and lunge_timer <= 0.0:
+		var normal := Vector2.ZERO
+		for i in get_slide_collision_count():
+			normal += get_slide_collision(i).get_normal()
+		bounce_direction = normal.normalized() if normal.length_squared() > 0.0 else -velocity.normalized()
+		bounce_timer = BOUNCE_DURATION
 
 	var anim := $AnimatedSprite2D
 	if is_attacking:

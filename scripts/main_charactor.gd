@@ -10,7 +10,7 @@ const MAX_HP = 100				#最大生命值
 const DASH_DAMAGE = 20
 const AUTO_AIM_RANGE  = 200.0  # 自动瞄准距离（像素）
 const SHOOT_COOLDOWN  = 0.4    # 射击间隔（秒）
-const BULLET_SCENE    = preload("res://scenes/bullet.tscn")			#冲刺伤害
+const BULLET_SCENE    = preload("res://scenes/bullet.tscn")			
 
 var hp := MAX_HP
 var health_bar: ProgressBar
@@ -26,6 +26,7 @@ var injury_timer := 0.0
 const INJURY_DURATION = 0.5
 
 var shoot_timer := 0.0
+var is_dead    := false
 
 
 func _ready() -> void:
@@ -40,6 +41,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		return
 	var anim := $AnimatedSprite2D
 
 	# 受伤动画计时
@@ -115,6 +118,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if is_dead:
+		return
 	shoot_timer = max(0.0, shoot_timer - delta)
 	_update_gun()
 
@@ -124,17 +129,22 @@ func _update_gun() -> void:
 	var nearest := _get_nearest_slime()
 
 	if nearest != null:
-		# 自动瞄准最近的怪物
+		# 近距离内自动瞄准最近的怪物
 		gun_pivot.look_at(nearest.global_position)
-		gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
-		# 自动射击
-		if shoot_timer <= 0.0:
-			_shoot(gun_pivot)
-			shoot_timer = SHOOT_COOLDOWN
 	else:
-		# 跟随鼠标
+		# 范围外跟随鼠标
 		gun_pivot.look_at(get_global_mouse_position())
-		gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
+	gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
+
+
+func _input(event: InputEvent) -> void:
+	if is_dead or is_dashing:
+		return
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if shoot_timer <= 0.0:
+				_shoot($GunPivot)
+				shoot_timer = SHOOT_COOLDOWN
 
 
 func _get_nearest_slime() -> Node:
@@ -153,8 +163,9 @@ func _get_nearest_slime() -> Node:
 func _shoot(gun_pivot: Node2D) -> void:
 	var bullet := BULLET_SCENE.instantiate()
 	var dir := Vector2(cos(gun_pivot.global_rotation), sin(gun_pivot.global_rotation))
-	bullet.direction = dir
-	bullet.rotation  = dir.angle()
+	bullet.direction      = dir
+	bullet.rotation       = dir.angle()
+	bullet.extra_velocity = velocity  # 叠加玩家当前移动速度
 	var muzzle_pos: Vector2 = $GunPivot/Muzzle.global_position
 	get_tree().current_scene.add_child(bullet)
 	bullet.global_position = muzzle_pos
@@ -163,7 +174,7 @@ func _shoot(gun_pivot: Node2D) -> void:
 func take_damage(amount: int) -> void:
 	if is_dashing:
 		return
-	if hp <= 0:
+	if is_dead or hp <= 0:
 		return
 	hp -= amount
 	hp = max(0, hp)
@@ -172,4 +183,19 @@ func take_damage(amount: int) -> void:
 	is_injured = true
 	injury_timer = INJURY_DURATION
 	if hp <= 0:
+		_die()
+
+
+func _die() -> void:
+	is_dead = true
+	velocity = Vector2.ZERO
+	$CollisionShape2D.set_deferred("disabled", true)
+	health_bar.hide()
+	var anim := $AnimatedSprite2D
+	
+	anim.sprite_frames.set_animation_loop("death", false)
+	anim.play("death")
+	await anim.animation_finished
+	
+	if is_inside_tree():
 		died.emit()

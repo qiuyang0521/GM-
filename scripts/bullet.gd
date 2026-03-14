@@ -2,28 +2,28 @@ extends Area2D
 
 const SPEED    = 500.0
 const DAMAGE   = 15
-const LIFETIME = 3.0
+const LIFETIME = 1.0
 
-var direction  := Vector2.RIGHT
-var _lifetime  := LIFETIME
+var direction     := Vector2.RIGHT
+var extra_velocity := Vector2.ZERO  # 继承自玩家的初速度
+var _lifetime     := LIFETIME
 
 
 func _ready() -> void:
-	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
 
 
-func _process(delta: float) -> void:
-	position += direction * SPEED * delta
+func _physics_process(delta: float) -> void:
+	position += (direction * SPEED + extra_velocity) * delta
 	_lifetime -= delta
 	if _lifetime <= 0.0:
 		queue_free()
-
-
-func _on_body_entered(body: Node2D) -> void:
-	# 碰到任何物理体（非玩家）均视为撞墙，销毁自身
-	if not body.is_in_group("player"):
-		queue_free()
+		return
+	# 通过 RayCast2D 检测前方墙体（物理帧内同步更新，最为可靠）
+	if $RayCast2D.is_colliding():
+		var collider: Node2D = $RayCast2D.get_collider()
+		if collider != null and not collider.is_in_group("player") and not collider.is_in_group("slimes"):
+			queue_free()
 
 
 func _on_area_entered(area: Area2D) -> void:
