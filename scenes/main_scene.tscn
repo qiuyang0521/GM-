@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=4 uid="uid://dwfuuhrvdanji"]
+[gd_scene load_steps=7 format=4 uid="uid://dwfuuhrvdanji"]
 
 [ext_resource type="TileSet" uid="uid://drgr43xpdy8ft" path="res://assets/sprites/tile_map.tres" id="1_w2twt"]
 [ext_resource type="PackedScene" uid="uid://dfegvenbfqrdi" path="res://scenes/main_character.tscn" id="2_pw63i"]
+[ext_resource type="FontFile" uid="uid://2tc3wxlj8isk" path="res://assets/font/像素字体.ttf" id="3_rt2n2"]
 [ext_resource type="PackedScene" uid="uid://eubucmixlakt" path="res://scenes/slime.tscn" id="4_gubc5"]
 [ext_resource type="PackedScene" uid="uid://bke285pjcoq1l" path="res://scenes/coin.tscn" id="5_gubc5"]
 [ext_resource type="Script" uid="uid://bwmja4ex5y86x" path="res://scripts/main_scene.gd" id="5_mscn"]
@@ -34,8 +35,9 @@ offset_left = -176.0
 offset_top = 16.0
 offset_right = -46.0
 offset_bottom = 65.0
-text = "     w             上
-a   s   d   左  下  右"
+theme_override_fonts/font = ExtResource("3_rt2n2")
+text = "       w             上
+  a   s   d   左  下  右"
 
 [node name="reset" type="Label" parent="hint"]
 layout_mode = 0
@@ -43,7 +45,8 @@ offset_left = 50.0
 offset_top = -59.0
 offset_right = 162.0
 offset_bottom = -36.0
-text = "长按r  重新开始"
+theme_override_fonts/font = ExtResource("3_rt2n2")
+text = "长按r      重新开始"
 
 [node name="pause" type="Label" parent="hint"]
 layout_mode = 0
@@ -51,7 +54,9 @@ offset_left = -156.0
 offset_top = -61.0
 offset_right = -78.0
 offset_bottom = -38.0
-text = "esc     暂停"
+theme_override_fonts/font = ExtResource("3_rt2n2")
+theme_override_font_sizes/font_size = 16
+text = "esc        暂停"
 
 [node name="dash" type="Label" parent="hint"]
 layout_mode = 0
@@ -59,6 +64,7 @@ offset_left = 46.0
 offset_top = 36.0
 offset_right = 125.0
 offset_bottom = 59.0
+theme_override_fonts/font = ExtResource("3_rt2n2")
 text = "shift   翻滚"
 
 [node name="slime" parent="." instance=ExtResource("4_gubc5")]
@@ -84,6 +90,7 @@ zoom = Vector2(2.965, 2.965)
 
 [node name="DeathScreen" type="CanvasLayer" parent="."]
 process_mode = 3
+visible = false
 
 [node name="Overlay" type="ColorRect" parent="DeathScreen"]
 anchors_preset = 15
@@ -120,6 +127,7 @@ text = "重生"
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 process_mode = 3
+visible = false
 
 [node name="Overlay" type="ColorRect" parent="PauseMenu"]
 anchors_preset = 15
@@ -184,7 +192,8 @@ offset_top = 12.0
 offset_right = 160.0
 offset_bottom = 40.0
 theme_override_colors/font_color = Color(1, 1, 0.2, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_fonts/font = ExtResource("3_rt2n2")
+theme_override_font_sizes/font_size = 16
 text = "硬币: 0"
 
 [node name="ResetBar" type="ProgressBar" parent="CoinHUD"]
@@ -197,6 +206,7 @@ show_percentage = false
 
 [node name="VictoryScreen" type="CanvasLayer" parent="."]
 process_mode = 3
+visible = false
 
 [node name="Overlay" type="ColorRect" parent="VictoryScreen"]
 anchors_preset = 15

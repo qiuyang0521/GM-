@@ -5,11 +5,20 @@ var reset_hold_timer := 0.0
 
 
 func _ready() -> void:
+	# 主场景根节点本身也设为 Always，确保暂停时仍能接收 _unhandled_input 事件
+	process_mode                 = PROCESS_MODE_ALWAYS
+
 	# 将游戏世界节点设置为可暂停，保证 get_tree().paused 生效
 	$background.process_mode     = PROCESS_MODE_PAUSABLE
 	$wall.process_mode           = PROCESS_MODE_PAUSABLE
 	$ground.process_mode         = PROCESS_MODE_PAUSABLE
 	$MainCharacter.process_mode  = PROCESS_MODE_PAUSABLE
+
+	# 确保所有 UI 层在游戏暂停时仍可响应输入与按钮点击
+	$DeathScreen.process_mode    = PROCESS_MODE_ALWAYS
+	$PauseMenu.process_mode      = PROCESS_MODE_ALWAYS
+	$VictoryScreen.process_mode  = PROCESS_MODE_ALWAYS
+	$CoinHUD.process_mode        = PROCESS_MODE_ALWAYS
 
 	# 初始隐藏视图层
 	$DeathScreen.hide()

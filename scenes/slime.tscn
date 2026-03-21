@@ -128,7 +128,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_a02ik")
 }],
-"loop": true,
+"loop": false,
 "name": &"injury",
 "speed": 5.0
 }]
@@ -144,21 +144,18 @@ platform_wall_layers = 2
 script = ExtResource("1_p2gj0")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -6)
 sprite_frames = SubResource("SpriteFrames_fd6lc")
 animation = &"injury"
 autoplay = "idle"
-frame = 1
-frame_progress = 0.91275114
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 7)
 shape = SubResource("RectangleShape2D_371uh")
 
 [node name="Hitbox" type="Area2D" parent="."]
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
-position = Vector2(0, 6.75)
 shape = SubResource("RectangleShape2D_p2gj0")
 
 [node name="HurtSound" type="AudioStreamPlayer" parent="."]
