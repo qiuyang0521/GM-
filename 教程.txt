@@ -1,0 +1,803 @@
+
+================================================================
+  新手教程项目 · 完整开发教程
+  适合对象：从未接触过游戏引擎的初学者
+================================================================
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                    目 录                                      ║
+╠══════════════════════════════════════════════════════════════╣
+║  第一章  认识 Godot 引擎                                      ║
+║  第二章  GDScript 语言入门                                    ║
+║  第三章  项目结构总览                                         ║
+║  第四章  玩家角色（main_charactor）                           ║
+║  第五章  武器与子弹系统（handgun / bullet）                   ║
+║  第六章  史莱姆 AI（slime）                                   ║
+║  第七章  游戏场景管理（main_scene）                           ║
+║  第八章  其他系统（硬币 / 开始菜单）                          ║
+║  第九章  参数调整指南                                         ║
+╚══════════════════════════════════════════════════════════════╝
+
+
+================================================================
+  第一章  认识 Godot 引擎
+================================================================
+
+【什么是游戏引擎？】
+游戏引擎是一套帮你做好"底层工作"的工具集合。
+没有引擎，你要自己写：画面渲染、物理碰撞、声音播放……
+有了引擎，你只需要专注写"游戏逻辑"即可。
+
+Godot 是一款免费、开源的游戏引擎，适合 2D 和 3D 游戏开发。
+本项目使用 Godot 4.x 版本。
+
+----------------------------------------------------------------
+【Godot 最核心的三个概念】
+----------------------------------------------------------------
+
+▌概念一：节点（Node）
+  节点是 Godot 里最基本的构建单元，每个节点负责一件事：
+    - Sprite2D        → 显示图片
+    - CollisionShape2D → 提供碰撞形状
+    - AnimatedSprite2D → 播放动画
+    - AudioStreamPlayer → 播放声音
+    - Area2D          → 检测区域重叠
+
+▌概念二：场景（Scene）
+  场景是若干节点组成的"树形结构"，保存为 .tscn 文件。
+  你可以把场景想象成一个蓝图（Blueprint）：
+    - 玩家是一个场景（main_charactor.tscn）
+    - 史莱姆是一个场景（slime.tscn）
+    - 整个游戏关卡也是一个场景（main_scene.tscn）
+
+  场景可以互相嵌套：关卡场景里放了玩家场景和史莱姆场景。
+
+▌概念三：脚本（Script）
+  脚本用 GDScript 语言写，附加在某个节点上，控制该节点的行为。
+  例如：slime.gd 附加在史莱姆的根节点上，控制它如何追踪玩家。
+
+----------------------------------------------------------------
+【Godot 编辑器界面简介】
+----------------------------------------------------------------
+
+  ┌────────────────────────────────────────────────────────┐
+  │  菜单栏（File / Scene / Project / Debug …）            │
+  ├──────────┬─────────────────────────────┬───────────────┤
+  │          │                             │               │
+  │  场景树   │      2D / 3D 视口（主画布） │   检视器      │
+  │ (Scene)  │                             │ (Inspector)   │
+  │  左侧面板 │    在这里摆放和预览节点      │  右侧属性面板 │
+  │          │                             │               │
+  ├──────────┴─────────────────────────────┴───────────────┤
+  │  底部：文件系统 / 输出日志 / 动画编辑器                  │
+  └────────────────────────────────────────────────────────┘
+
+  · 场景树：显示当前场景的所有节点，点击可选中
+  · 检视器：显示选中节点的所有属性（位置/大小/碰撞层…）
+  · 文件系统：管理项目里的所有文件
+
+
+================================================================
+  第二章  GDScript 语言入门
+================================================================
+
+GDScript 是 Godot 专属的脚本语言，语法类似 Python，
+读起来很接近自然语言，非常适合初学者。
+
+----------------------------------------------------------------
+【2.1 变量（Variable）】
+----------------------------------------------------------------
+
+变量就是给数据起一个名字，方便反复使用。
+
+  var hp := 100           # 自动推断类型（整数）
+  var name: String = "骑士"  # 显式声明为字符串类型
+  var speed: float = 150.0   # 显式声明为浮点数（小数）
+
+  const MAX_HP = 100      # 常量：一旦定义就不能修改
+
+  △ := 是"推断赋值"，Godot 自动判断右边的数据类型
+  △ const 用于永远不变的数值，比如最大血量、速度上限
+
+----------------------------------------------------------------
+【2.2 函数（Function）】
+----------------------------------------------------------------
+
+函数是一段可以被反复调用的代码块：
+
+  func 函数名(参数: 类型) -> 返回类型:
+      # 函数体，注意要用 Tab 缩进
+      pass
+
+  示例：
+  func take_damage(amount: int) -> void:
+      hp -= amount        # hp 减少 amount 点
+      if hp <= 0:
+          _die()          # 调用 _die() 函数
+
+  △ void 表示该函数不返回任何值
+  △ -> int 表示返回一个整数
+
+▌Godot 内置的特殊函数（自动调用，无需手动调用）：
+
+  func _ready() -> void:
+      # 节点进入场景树时自动执行一次，用于初始化
+
+  func _process(delta: float) -> void:
+      # 每帧执行（通常 60次/秒），delta 是距上帧的时间间隔（秒）
+
+  func _physics_process(delta: float) -> void:
+      # 每个物理帧执行，用于移动/碰撞等物理相关逻辑
+
+  func _input(event: InputEvent) -> void:
+      # 有输入事件（键盘/鼠标）时执行
+
+  △ delta 的用法：velocity = 150.0 * delta
+    这样无论帧率是 30 还是 60，移动速度都相同
+    因为：150 像素/秒 × 每帧时间(秒) = 本帧移动像素
+
+----------------------------------------------------------------
+【2.3 条件语句（if / elif / else）】
+----------------------------------------------------------------
+
+  if hp <= 0:
+      _die()
+  elif hp < 30:
+      print("血量危险！")
+  else:
+      print("状态良好")
+
+  △ 注意：Godot 用缩进区分代码块，不用花括号 {}
+
+----------------------------------------------------------------
+【2.4 循环（for / while）】
+----------------------------------------------------------------
+
+  for i in range(5):          # 循环 5 次（i = 0,1,2,3,4）
+      print(i)
+
+  for slime in slimes_list:   # 遍历数组里的每个元素
+      slime.take_damage(10)
+
+  while timer > 0.0:          # 条件为真时一直循环
+      timer -= delta
+
+----------------------------------------------------------------
+【2.5 信号（Signal）】
+----------------------------------------------------------------
+
+信号是 Godot 的"事件通知"系统，类似于广播电台：
+  · 某个节点"发出"信号（emit）
+  · 其他节点"监听"该信号（connect）
+
+  # 在 main_charactor.gd 中定义信号：
+  signal died
+
+  # 在玩家死亡时发出信号：
+  died.emit()
+
+  # 在 main_scene.gd 中监听该信号：
+  $MainCharactor.died.connect(_on_player_died)
+
+  # 当收到信号时执行的函数：
+  func _on_player_died() -> void:
+      $DeathScreen.show()
+
+  △ 这样"玩家"和"场景管理"代码完全分离，互不干扰
+
+----------------------------------------------------------------
+【2.6 节点引用（$ 符号）】
+----------------------------------------------------------------
+
+  $AnimatedSprite2D          # 引用子节点，名字要完全匹配
+  $GunPivot/Muzzle           # 用 / 访问更深层的子节点
+  get_parent().get_node("X") # 通过路径访问其他节点
+
+  △ $ 等价于 get_node()，是简写形式
+
+----------------------------------------------------------------
+【2.7 向量（Vector2）】
+----------------------------------------------------------------
+
+向量是 2D 游戏里最常用的数据类型，表示"方向+长度"：
+
+  var vel := Vector2(100, 0)   # x=100, y=0 → 向右移动
+  var vel := Vector2(0, -100)  # y为负 → 向上移动（Godot Y轴向下）
+
+  Vector2.ZERO   = Vector2(0, 0)    # 零向量，表示静止
+  Vector2.RIGHT  = Vector2(1, 0)    # 向右的单位向量
+  Vector2.UP     = Vector2(0, -1)   # 向上的单位向量
+
+  常用运算：
+  vel.normalized()           # 归一化：只保留方向，长度变为 1
+  vel.length()               # 向量的长度（两点之间的距离）
+  a.distance_to(b)           # a 到 b 的距离
+  a.lerp(b, 0.1)             # 从 a 到 b 的 10% 处（平滑插值）
+
+
+================================================================
+  第三章  项目结构总览
+================================================================
+
+----------------------------------------------------------------
+【文件目录】
+----------------------------------------------------------------
+
+  新手教程项目/
+  ├── scenes/                   ← 所有场景文件
+  │   ├── start.tscn            ← 开始菜单场景
+  │   ├── main_scene.tscn       ← 游戏主场景（关卡）
+  │   ├── main_charactor.tscn   ← 玩家角色场景
+  │   ├── slime.tscn            ← 史莱姆敌人场景
+  │   ├── bullet.tscn           ← 子弹场景
+  │   ├── handgun.tscn          ← 手枪场景
+  │   └── coin.tscn             ← 硬币场景
+  ├── scripts/                  ← 所有脚本文件
+  │   ├── main_charactor.gd     ← 玩家逻辑
+  │   ├── slime.gd              ← 史莱姆 AI
+  │   ├── bullet.gd             ← 子弹行为
+  │   ├── main_scene.gd         ← 游戏场景管理
+  │   ├── coin.gd               ← 硬币拾取
+  │   └── start_menu.gd         ← 开始菜单按钮
+  ├── assets/                   ← 美术资源
+  │   ├── sprites/              ← 图片/精灵表
+  │   └── sounds/               ← 音效文件
+  └── 参数.txt                   ← 游戏数值配置表
+
+----------------------------------------------------------------
+【场景嵌套关系】
+----------------------------------------------------------------
+
+  main_scene（关卡）
+    ├── background（背景 TileMapLayer）
+    ├── wall（墙壁 TileMapLayer）
+    ├── ground（地面 TileMapLayer）
+    ├── MainCharactor ← 实例化 main_charactor.tscn
+    ├── slime_1       ← 实例化 slime.tscn
+    ├── slime_2       ← 实例化 slime.tscn（可放多只）
+    ├── coin          ← 实例化 coin.tscn
+    ├── CoinHUD（CanvasLayer）← 硬币计数 UI
+    ├── DeathScreen（CanvasLayer）← 死亡界面
+    ├── PauseMenu（CanvasLayer）← 暂停菜单
+    └── VictoryScreen（CanvasLayer）← 胜利界面
+
+  main_charactor（玩家）
+    ├── AnimatedSprite2D ← 播放动画
+    ├── CollisionShape2D ← 玩家碰撞体
+    ├── Hitbox（Area2D） ← 冲刺攻击检测区域
+    ├── HurtSound        ← 受伤音效
+    └── GunPivot（Node2D）← 枪的旋转中心
+          ├── handgun   ← 实例化 handgun.tscn
+          └── Muzzle（Node2D）← 枪口位置标记
+
+  slime（史莱姆）
+    ├── AnimatedSprite2D
+    ├── CollisionShape2D
+    ├── Hitbox（Area2D）← 攻击检测区域
+    ├── HurtSound
+    └── JumpSound
+
+  bullet（子弹）
+    ├── AnimatedSprite2D
+    ├── CollisionShape2D
+    └── RayCast2D ← 前方墙体检测射线
+
+
+================================================================
+  第四章  玩家角色（main_charactor）
+================================================================
+
+文件：scripts/main_charactor.gd
+场景：scenes/main_charactor.tscn
+
+----------------------------------------------------------------
+【4.1 脚本继承】
+----------------------------------------------------------------
+
+  extends CharacterBody2D
+
+  CharacterBody2D 是 Godot 内置的"角色物理体"节点，
+  它提供了 move_and_slide() 函数，自动处理碰撞和滑动，
+  非常适合做玩家和怪物的移动。
+
+----------------------------------------------------------------
+【4.2 常量与变量定义】
+----------------------------------------------------------------
+
+  const SPEED = 150.0         # 移动速度（像素/秒）
+  const DASH_SPEED = 400.0    # 冲刺速度
+  const MAX_HP = 100          # 最大血量
+  var hp := MAX_HP            # 当前血量（初始等于最大血量）
+  var is_dashing := false     # 是否正在冲刺
+
+  △ const 是"永不改变的数值"，var 是"运行中会变化的状态"
+
+----------------------------------------------------------------
+【4.3 初始化（_ready）】
+----------------------------------------------------------------
+
+  func _ready() -> void:
+      add_to_group("player")     # 加入 "player" 组，方便其他脚本查找
+      health_bar = ProgressBar.new()  # 动态创建血条节点
+      health_bar.max_value = MAX_HP
+      add_child(health_bar)      # 将血条作为子节点添加到场景
+
+  △ add_to_group() 相当于给节点贴标签
+    其他地方可用 get_tree().get_nodes_in_group("player") 找到所有玩家
+
+----------------------------------------------------------------
+【4.4 移动逻辑（_physics_process）】
+----------------------------------------------------------------
+
+  func _physics_process(delta: float) -> void:
+      # 读取玩家输入，合成移动方向向量
+      var direction := Vector2(
+          Input.get_axis("move_left", "move_right"),  # 水平方向：-1到1
+          Input.get_axis("move_up", "move_down")      # 垂直方向：-1到1
+      )
+
+      if direction != Vector2.ZERO:
+          velocity = direction.normalized() * SPEED   # 标准化后乘速度
+      else:
+          velocity = Vector2.ZERO                     # 没有输入则停止
+
+      move_and_slide()   # Godot 自动处理碰撞，更新位置
+
+  △ Input.get_axis("左", "右") 返回 -1 到 1 之间的值：
+    按 A/左键 → -1，按 D/右键 → +1，都不按 → 0
+  △ normalized() 让对角移动速度不会变快（确保长度为1）
+
+----------------------------------------------------------------
+【4.5 动画控制】
+----------------------------------------------------------------
+
+  # 根据速度和状态播放对应动画
+  if is_injured:
+      anim.play("injury")     # 受伤动画优先级最高
+  elif velocity != Vector2.ZERO:
+      anim.play("move")       # 移动中
+  else:
+      anim.play("idle")       # 静止
+
+  # 根据水平速度翻转精灵（实现左右朝向）
+  if velocity.x > 0:
+      anim.flip_h = false     # 向右走，不翻转
+  elif velocity.x < 0:
+      anim.flip_h = true      # 向左走，水平翻转
+
+----------------------------------------------------------------
+【4.6 冲刺翻滚（Dash）】
+----------------------------------------------------------------
+
+  冲刺系统涉及三个状态：
+    1. 正常状态       → 按下 dash 键触发冲刺
+    2. 冲刺中         → is_dashing = true，高速移动
+    3. 冷却中         → dash_cooldown_timer 倒计时
+
+  # 触发冲刺
+  if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0.0:
+      dash_direction = direction.normalized()  # 冲刺方向 = 当前移动方向
+      is_dashing = true
+      dash_timer = DASH_DURATION       # 冲刺持续 0.25 秒
+      dash_cooldown_timer = DASH_COOLDOWN  # 冷却 1.0 秒
+      $Hitbox.monitoring = true        # 开启冲刺攻击检测
+
+  # 冲刺结束
+  if dash_timer <= 0.0:
+      is_dashing = false
+      $Hitbox.monitoring = false       # 关闭攻击检测
+
+  ▌冲刺无敌原理：
+  func take_damage(amount: int) -> void:
+      if is_dashing:
+          return   # 冲刺期间直接跳出函数，不受伤
+
+  ▌冲刺攻击原理：
+  # 每帧检查 Hitbox 内是否有史莱姆的 Hitbox
+  for area in $Hitbox.get_overlapping_areas():
+      var slime = area.get_parent()
+      if slime.has_method("take_damage"):
+          slime.take_damage(DASH_DAMAGE)  # 对史莱姆造成伤害
+
+----------------------------------------------------------------
+【4.7 伤害与死亡】
+----------------------------------------------------------------
+
+  func take_damage(amount: int) -> void:
+      if is_dashing: return      # 翻滚无敌
+      if is_dead or hp <= 0: return  # 已死亡则跳过
+
+      hp -= amount               # 扣血
+      hp = max(0, hp)            # 血量不低于 0
+      health_bar.value = hp      # 更新血条显示
+      $HurtSound.play()          # 播放受伤音效
+      is_injured = true          # 开始受伤动画状态
+      if hp <= 0:
+          _die()                 # 血量归零，触发死亡
+
+  func _die() -> void:
+      is_dead = true
+      velocity = Vector2.ZERO
+      $CollisionShape2D.set_deferred("disabled", true)  # 禁用碰撞
+      anim.play("death")         # 播放死亡动画
+      await anim.animation_finished  # 等待动画播放完毕
+      died.emit()                # 发出死亡信号，通知场景显示死亡界面
+
+  △ set_deferred() 表示"下一帧再执行"，物理相关操作需要如此
+  △ await 是"暂停这里，等到信号发出再继续往下"
+
+
+================================================================
+  第五章  武器与子弹系统
+================================================================
+
+文件：scripts/main_charactor.gd（枪的逻辑）
+      scripts/bullet.gd（子弹逻辑）
+
+----------------------------------------------------------------
+【5.1 枪的朝向（自动瞄准 + 跟随鼠标）】
+----------------------------------------------------------------
+
+  枪挂在 GunPivot（Node2D）节点下。
+  GunPivot 旋转时，枪整体跟着旋转，就像拿枪的手腕在转动。
+
+  func _update_gun() -> void:
+      var nearest := _get_nearest_slime()  # 查找最近的史莱姆
+
+      if nearest != null:
+          # 有敌人在 200px 范围内：自动瞄准
+          gun_pivot.look_at(nearest.global_position)
+      else:
+          # 无近距离敌人：跟随鼠标
+          gun_pivot.look_at(get_global_mouse_position())
+
+      # 鼠标在左侧时翻转枪图像，防止枪头朝下
+      gun_pivot.scale.y = -1.0 if cos(gun_pivot.rotation) < 0 else 1.0
+
+  △ look_at(位置) 让节点的 +X 轴指向目标位置
+  △ cos(rotation) < 0 表示枪正在向左半边旋转，需要翻转
+
+----------------------------------------------------------------
+【5.2 射击（鼠标左键）】
+----------------------------------------------------------------
+
+  func _input(event: InputEvent) -> void:
+      if event is InputEventMouseButton:
+          if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+              if shoot_timer <= 0.0:    # CD 冷却好了才能射击
+                  _shoot($GunPivot)
+                  shoot_timer = SHOOT_COOLDOWN  # 重置 CD
+
+  func _shoot(gun_pivot: Node2D) -> void:
+      var bullet := BULLET_SCENE.instantiate()  # 从 .tscn 创建子弹实例
+      # 计算枪口朝向的方向向量
+      var dir := Vector2(cos(gun_pivot.global_rotation), sin(gun_pivot.global_rotation))
+      bullet.direction      = dir            # 设置子弹飞行方向
+      bullet.extra_velocity = velocity       # 叠加玩家当前速度（矢量叠加）
+      get_tree().current_scene.add_child(bullet)  # 添加到场景
+      bullet.global_position = $GunPivot/Muzzle.global_position  # 从枪口位置出发
+
+  △ instantiate() 相当于"从蓝图生产一个实体"
+  △ 矢量叠加：玩家向右跑时射击，子弹会偏右，真实感更强
+
+----------------------------------------------------------------
+【5.3 子弹行为（bullet.gd）】
+----------------------------------------------------------------
+
+  extends Area2D   # 子弹是 Area2D，用于检测与史莱姆 Hitbox 的重叠
+
+  func _physics_process(delta: float) -> void:
+      # 子弹每帧移动
+      position += (direction * SPEED + extra_velocity) * delta
+
+      # 超时自动销毁
+      _lifetime -= delta
+      if _lifetime <= 0.0:
+          queue_free()
+          return
+
+      # 用 RayCast2D 检测前方是否有墙壁
+      if $RayCast2D.is_colliding():
+          var collider: Node2D = $RayCast2D.get_collider()
+          # 如果不是玩家也不是史莱姆，则视为墙壁，销毁子弹
+          if not collider.is_in_group("player") and not collider.is_in_group("slimes"):
+              queue_free()
+
+  # 碰到 Area2D（史莱姆的 Hitbox）时
+  func _on_area_entered(area: Area2D) -> void:
+      var parent := area.get_parent()
+      if parent.has_method("take_damage") and not parent.is_in_group("player"):
+          parent.take_damage(DAMAGE)  # 对史莱姆扣血
+          queue_free()               # 子弹销毁自身
+
+  △ queue_free() 是 Godot 安全删除节点的方法，不会立即删除，
+    而是在本帧结束后删除，避免在循环中删除出错
+
+
+================================================================
+  第六章  史莱姆 AI（slime）
+================================================================
+
+文件：scripts/slime.gd
+
+----------------------------------------------------------------
+【6.1 状态机设计思路】
+----------------------------------------------------------------
+
+史莱姆的行为可以分成几个互斥的状态：
+
+  ┌─────────────────────────────────────────────────────┐
+  │  状态优先级（从高到低）                               │
+  │                                                     │
+  │  1. 死亡（is_dead）                → 什么都不做      │
+  │  2. 冲刺攻击（lunge_timer > 0）    → 快速冲向玩家    │
+  │  3. 蓄力（is_winding_up）         → 减速停止准备冲   │
+  │  4. 攻击范围内（distance <= 40）   → 等待 CD 再冲    │
+  │  5. 追踪（其他情况）               → 向玩家移动       │
+  │     · 碰墙反弹子状态              → 暂时反向移动     │
+  └─────────────────────────────────────────────────────┘
+
+----------------------------------------------------------------
+【6.2 追踪玩家】
+----------------------------------------------------------------
+
+  var to_player := player.global_position - global_position  # 方向向量
+  var distance  := to_player.length()  # 与玩家的距离
+
+  # 计算目标速度（只走水平或垂直，模拟格子移动风格）
+  var target_vel: Vector2
+  if abs(to_player.x) >= abs(to_player.y):
+      target_vel = Vector2(sign(to_player.x), 0) * SPEED  # 优先水平移动
+  else:
+      target_vel = Vector2(0, sign(to_player.y)) * SPEED  # 优先垂直移动
+
+  # lerp 平滑过渡到目标速度，避免速度突变
+  velocity = velocity.lerp(target_vel, ACCELERATION * delta)
+
+  △ lerp(a, b, t) = a + (b-a) * t  是线性插值，t越大过渡越快
+  △ sign(x) 返回 x 的符号：正数→1, 负数→-1, 零→0
+
+----------------------------------------------------------------
+【6.3 攻击（突刺冲锋）】
+----------------------------------------------------------------
+
+攻击分三个阶段：
+
+  阶段1：蓄力（WINDUP_DURATION = 0.2秒）
+    → 史莱姆减速，播放 attack 动画
+
+  阶段2：冲锋（LUNGE_DURATION = 0.15秒）
+    → velocity = lunge_direction * LUNGE_SPEED（超高速冲向玩家）
+    → 开启 Hitbox.monitoring，检测是否碰到玩家
+
+  阶段3：冷却（ATTACK_COOLDOWN = 1.0秒）
+    → 关闭 Hitbox，等待下次攻击
+
+  func _attack_player() -> void:
+      if player.has_method("take_damage"):
+          player.take_damage(ATTACK_DAMAGE)  # 对玩家造成伤害
+
+----------------------------------------------------------------
+【6.4 碰墙反弹】
+----------------------------------------------------------------
+
+  move_and_slide()  # 执行物理移动
+
+  # 检测是否碰到墙壁（且不在攻击/冲刺状态中）
+  if is_on_wall() and bounce_timer <= 0.0 and not is_attacking:
+      # 获取墙壁的法线（垂直于墙面，指向墙外）
+      var normal := Vector2.ZERO
+      for i in get_slide_collision_count():
+          normal += get_slide_collision(i).get_normal()
+      bounce_direction = normal.normalized()  # 沿法线方向退离
+      bounce_timer = BOUNCE_DURATION          # 反弹 0.6 秒
+
+  △ 法线（Normal）是垂直于墙面的向量，指向墙外
+    例如：右侧墙壁的法线 = Vector2(-1, 0)（向左）
+
+----------------------------------------------------------------
+【6.5 死亡处理】
+----------------------------------------------------------------
+
+  func _die() -> void:
+      is_dead = true
+      $CollisionShape2D.set_deferred("disabled", true)  # 禁用碰撞
+      $Hitbox.monitoring  = false    # 停止攻击检测
+      $Hitbox.monitorable = false    # 不再被其他物体检测到
+      health_bar.hide()
+      $AnimatedSprite2D.play("death")    # 播放死亡动画
+      # 动画播完后删除整个节点
+      $AnimatedSprite2D.animation_finished.connect(queue_free)
+
+
+================================================================
+  第七章  游戏场景管理（main_scene）
+================================================================
+
+文件：scripts/main_scene.gd
+
+----------------------------------------------------------------
+【7.1 暂停系统】
+----------------------------------------------------------------
+
+  Godot 提供 get_tree().paused = true 全局暂停，
+  暂停后大部分节点的 _process / _physics_process 不再执行。
+
+  为了让某些节点不受暂停影响（比如 UI 界面），
+  需要在 _ready 中设置：
+      node.process_mode = PROCESS_MODE_ALWAYS
+
+  暂停/恢复流程：
+    按 ESC 键 → _unhandled_input() 检测 "pause" 动作
+    → 调用 _show_pause_menu()：暂停 + 显示菜单
+    → 再按 ESC 调用 _resume()：恢复 + 隐藏菜单
+
+  func _show_pause_menu() -> void:
+      get_tree().paused = true
+      $PauseMenu.show()
+
+  func _resume() -> void:
+      get_tree().paused = false
+      $PauseMenu.hide()
+
+----------------------------------------------------------------
+【7.2 长按 R 重置】
+----------------------------------------------------------------
+
+  func _process(delta: float) -> void:
+      if Input.is_action_pressed("reset"):
+          reset_hold_timer += delta      # 累计按下时间
+          $CoinHUD/ResetBar.show()
+          $CoinHUD/ResetBar.value = reset_hold_timer
+          if reset_hold_timer >= 1.0:    # 按满 1 秒
+              get_tree().reload_current_scene()  # 重载场景（重置游戏）
+      else:
+          reset_hold_timer = 0.0         # 没按就清零
+          $CoinHUD/ResetBar.hide()
+
+  △ reload_current_scene() 重新载入当前场景，相当于重置游戏
+
+----------------------------------------------------------------
+【7.3 死亡界面与胜利界面】
+----------------------------------------------------------------
+
+  死亡流程：
+    玩家 died 信号 → _on_player_died() → 暂停 + 显示 DeathScreen
+    点击"重新开始" → reload_current_scene()
+
+  胜利流程：
+    每只史莱姆 tree_exited 信号（销毁时触发）→ _on_slime_removed()
+    → 检查 "slimes" 组是否为空 → 为空则显示 VictoryScreen
+
+  func _on_slime_removed() -> void:
+      if not is_inside_tree(): return  # 场景卸载时安全跳过
+      if get_tree().get_nodes_in_group("slimes").is_empty():
+          _show_victory()
+
+----------------------------------------------------------------
+【7.4 音量调节】
+----------------------------------------------------------------
+
+  func _on_volume_changed(value: float) -> void:
+      # 将滑块的线性值（0~1）转换为分贝（dB）
+      var db := linear_to_db(value) if value > 0.0 else -80.0
+      AudioServer.set_bus_volume_db(0, db)
+
+  △ 人耳感受的响度是对数关系，所以音量用 dB 表示更自然
+  △ AudioServer.set_bus_volume_db(0, db) 控制主音频总线
+
+
+================================================================
+  第八章  其他系统（硬币 / 开始菜单）
+================================================================
+
+----------------------------------------------------------------
+【8.1 硬币系统（coin.gd）】
+----------------------------------------------------------------
+
+硬币继承 CharacterBody2D（或 Area2D），场景中含有：
+  · AnimatedSprite2D → 显示硬币动画
+  · PickupArea（Area2D） → 检测玩家进入
+  · CoinSound → 播放拾取音效
+
+  func _on_pickup_area_body_entered(body: Node2D) -> void:
+      if body.is_in_group("player"):
+          $PickupArea.monitoring = false  # 立即禁止重复触发
+          collected.emit()               # 发出"被收集"信号
+          $AnimatedSprite2D.hide()       # 隐藏图像
+          $CoinSound.play()             # 播放音效
+          await $CoinSound.finished     # 等待音效播完
+          queue_free()                  # 删除自身
+
+main_scene.gd 中监听所有硬币的 collected 信号：
+  func _on_coin_collected() -> void:
+      coin_count += 1
+      $CoinHUD/CoinLabel.text = "硬币: %d" % coin_count
+
+  △ "%d" % coin_count 是字符串格式化，%d 会被替换为整数值
+
+----------------------------------------------------------------
+【8.2 按钮悬停动画（Tween）】
+----------------------------------------------------------------
+
+  func _on_button_hover(button: Button) -> void:
+      var tween := create_tween().set_parallel(true)
+      tween.tween_property(button, "scale",    Vector2(1.2, 1.2), 0.12)
+      tween.tween_property(button, "modulate", Color(1.5, 1.5, 1.5), 0.12)
+
+  Tween 是 Godot 的动画插值系统，用于属性的平滑过渡：
+  · tween_property(节点, "属性路径", 目标值, 时间)
+  · set_parallel(true) 让多个动画同时播放
+  · 0.12 秒内 scale 从 1.0 变到 1.2（按钮变大效果）
+
+
+================================================================
+  第九章  参数调整指南
+================================================================
+
+项目根目录下有"参数.txt"，列出了所有可调数值。
+修改参数不需要了解代码逻辑，只需要找到对应的 .gd 文件
+找到对应的 const 行，修改等号后面的数字即可。
+
+----------------------------------------------------------------
+【常见调整示例】
+----------------------------------------------------------------
+
+▌让游戏变简单：
+  · 增大玩家 MAX_HP（更耐打）
+  · 减小 SLIME 的 ATTACK_DAMAGE（史莱姆打人弱）
+  · 增大 AUTO_AIM_RANGE（自动瞄准范围更大）
+  · 减小 SHOOT_COOLDOWN（射击更快）
+
+▌让游戏变难：
+  · 减小玩家 SPEED（移动更慢）
+  · 增大 DASH_COOLDOWN（翻滚冷却更长）
+  · 增大史莱姆 SPEED 和 LUNGE_SPEED（史莱姆更快更凶）
+
+▌调整手感：
+  · ACCELERATION（史莱姆移动平滑度，越大转向越灵敏）
+  · DASH_DURATION（翻滚持续时间，值越大翻得越远）
+  · BULLET_LIFETIME（子弹存在时间，值越大射程越远）
+
+----------------------------------------------------------------
+【修改步骤】
+----------------------------------------------------------------
+
+  1. 打开 参数.txt，找到想修改的参数和对应脚本路径
+  2. 在 Godot 文件系统面板中找到该脚本，双击打开
+  3. 用 Ctrl+F 搜索参数名（如 MAX_HP）
+  4. 修改等号后面的数字
+  5. 保存文件（Ctrl+S）
+  6. 运行游戏测试效果（F5）
+
+  示例：
+  原来：const MAX_HP = 100
+  改为：const MAX_HP = 200    ← 玩家血量翻倍
+
+================================================================
+  附录：常见 Godot 快捷键
+================================================================
+
+  F5       运行整个项目（从主场景开始）
+  F6       运行当前打开的场景
+  Ctrl+S   保存当前文件
+  Ctrl+Z   撤销
+  Ctrl+F   在代码中搜索
+  Q/W/E    在 2D 视口切换：选择/移动/旋转 工具
+  空格键   按住可拖动 2D 视口
+
+================================================================
+  版本记录
+================================================================
+
+  本教程基于项目当前版本编写，包含以下已实现功能：
+  · 玩家四向移动 + 冲刺翻滚（无敌 + 攻击）
+  · 手枪跟随鼠标 / 自动瞄准 + 鼠标左键射击
+  · 子弹矢量叠加速度 + 墙体碰撞销毁
+  · 史莱姆追踪 AI + 突刺攻击 + 碰墙反弹 + 死亡动画
+  · 硬币拾取系统 + 屏幕计数显示
+  · 暂停菜单（音量调节）+ 死亡界面 + 胜利界面
+  · 长按 R 重置 + 游戏胜利条件（消灭所有史莱姆）
+
+================================================================

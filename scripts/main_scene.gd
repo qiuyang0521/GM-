@@ -9,7 +9,7 @@ func _ready() -> void:
 	$background.process_mode     = PROCESS_MODE_PAUSABLE
 	$wall.process_mode           = PROCESS_MODE_PAUSABLE
 	$ground.process_mode         = PROCESS_MODE_PAUSABLE
-	$MainCharactor.process_mode  = PROCESS_MODE_PAUSABLE
+	$MainCharacter.process_mode  = PROCESS_MODE_PAUSABLE
 
 	# 初始隐藏视图层
 	$DeathScreen.hide()
@@ -17,7 +17,7 @@ func _ready() -> void:
 	$VictoryScreen.hide()
 
 	# 连接玩家死亡信号
-	$MainCharactor.died.connect(_on_player_died)
+	$MainCharacter.died.connect(_on_player_died)
 
 	# 连接按钮悬停动画
 	_setup_button($DeathScreen/Center/VBox/RespawnButton)

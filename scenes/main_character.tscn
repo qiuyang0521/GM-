@@ -1,6 +1,6 @@
 [gd_scene load_steps=44 format=3 uid="uid://dfegvenbfqrdi"]
 
-[ext_resource type="Script" uid="uid://dp5t37751hgv3" path="res://scripts/main_charactor.gd" id="1_o0ski"]
+[ext_resource type="Script" path="res://scripts/main_character.gd" id="1_o0ski"]
 [ext_resource type="Texture2D" uid="uid://usutsr7p6irm" path="res://assets/sprites/knight.png" id="1_wnknc"]
 [ext_resource type="AudioStream" uid="uid://boir0id6ye0iw" path="res://assets/sounds/hurt.wav" id="2_hurt"]
 [ext_resource type="PackedScene" uid="uid://cddu7fp4h02j1" path="res://scenes/handgun.tscn" id="3_handgun"]
@@ -291,7 +291,7 @@ size = Vector2(10, 10)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hbox"]
 size = Vector2(10, 10)
 
-[node name="MainCharactor" type="CharacterBody2D"]
+[node name="MainCharacter" type="CharacterBody2D"]
 platform_wall_layers = 2
 script = ExtResource("1_o0ski")
 

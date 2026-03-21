@@ -30,7 +30,7 @@ var bounce_direction := Vector2.ZERO
 func _ready() -> void:
 	process_mode = PROCESS_MODE_PAUSABLE
 	add_to_group("slimes")
-	player = get_parent().get_node("MainCharactor")
+	player = get_parent().get_node("MainCharacter")
 	health_bar = ProgressBar.new()
 	health_bar.max_value = MAX_HP
 	health_bar.value = hp

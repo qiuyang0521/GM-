@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=4 uid="uid://dwfuuhrvdanji"]
 
 [ext_resource type="TileSet" uid="uid://drgr43xpdy8ft" path="res://assets/sprites/tile_map.tres" id="1_w2twt"]
-[ext_resource type="PackedScene" uid="uid://dfegvenbfqrdi" path="res://scenes/main_charactor.tscn" id="2_pw63i"]
+[ext_resource type="PackedScene" uid="uid://dfegvenbfqrdi" path="res://scenes/main_character.tscn" id="2_pw63i"]
 [ext_resource type="PackedScene" uid="uid://eubucmixlakt" path="res://scenes/slime.tscn" id="4_gubc5"]
 [ext_resource type="PackedScene" uid="uid://bke285pjcoq1l" path="res://scenes/coin.tscn" id="5_gubc5"]
 [ext_resource type="Script" uid="uid://bwmja4ex5y86x" path="res://scripts/main_scene.gd" id="5_mscn"]
@@ -76,10 +76,10 @@ position = Vector2(19, -245)
 [node name="slime5" parent="." instance=ExtResource("4_gubc5")]
 position = Vector2(-303, 36)
 
-[node name="MainCharactor" parent="." instance=ExtResource("2_pw63i")]
-position = Vector2(0, -5)
+[node name="MainCharacter" parent="." instance=ExtResource("2_pw63i")]
 
-[node name="Camera2D" type="Camera2D" parent="MainCharactor"]
+[node name="Camera2D" type="Camera2D" parent="MainCharacter"]
+position = Vector2(0, -5)
 zoom = Vector2(2.965, 2.965)
 
 [node name="DeathScreen" type="CanvasLayer" parent="."]
